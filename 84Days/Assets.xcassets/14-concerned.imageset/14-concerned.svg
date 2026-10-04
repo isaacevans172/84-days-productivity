@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420" role="img" aria-labelledby="t d">
+  <title id="t">84 Days mascot: Concerned</title>
+  <desc id="d">Progress ring mascot. Ring is always filled 89/100.</desc>
+  <g id="mascot" fill="none" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
+  <g id="legs" stroke-width="16">
+    <path id="leg-left" d="M174 284 V388 H150"/>
+    <path id="leg-right" d="M226 284 V388 H250"/>
+  </g>
+  <g id="body">
+    <circle id="ring-plate" cx="200" cy="170" r="100" fill="#FFFFFF" stroke="none"/>
+    <circle id="ring-track" cx="200" cy="170" r="110" stroke="#E6E6E6" stroke-width="20"/>
+    <circle id="ring-progress" data-ring-value="89" cx="200" cy="170" r="110" stroke="#111111" stroke-width="20" stroke-dasharray="615.12 691.15" transform="rotate(-90 200 170)"/>
+  </g>
+  <g id="face" stroke-width="7"><circle cx="168" cy="162" r="7" fill="#111111" stroke="none"/><circle cx="170.5" cy="159.5" r="2.2" fill="#FFFFFF" stroke="none"/><circle cx="232" cy="162" r="7" fill="#111111" stroke="none"/><circle cx="234.5" cy="159.5" r="2.2" fill="#FFFFFF" stroke="none"/><path d="M152 148 L182 134"/><path d="M248 148 L218 134"/><path d="M182 212 Q200 204 218 212"/></g>
+  <g id="arm-left" stroke-width="16">
+    
+    <path d="M104 228 Q66 268 34 258"/>
+    
+    <circle cx="32" cy="258" r="12" fill="#111111" stroke="none"/>
+  </g>
+  <g id="arm-right" transform="translate(400 0) scale(-1 1)" stroke-width="16">
+    
+    <path d="M106 224 Q84 262 90 300"/>
+    
+    <circle cx="90" cy="304" r="12" fill="#111111" stroke="none"/>
+  </g>
+  </g>
+</svg>

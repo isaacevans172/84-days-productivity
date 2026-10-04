@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420" role="img" aria-labelledby="t d">
+  <title id="t">84 Days mascot: Mock shock</title>
+  <desc id="d">Progress ring mascot. Ring is always filled 89/100.</desc>
+  <g id="mascot" fill="none" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
+  <g id="legs" stroke-width="16">
+    <path id="leg-left" d="M166 282 L142 388 H118"/>
+    <path id="leg-right" d="M234 282 L258 388 H282"/>
+  </g>
+  <g id="body">
+    <circle id="ring-plate" cx="200" cy="170" r="100" fill="#FFFFFF" stroke="none"/>
+    <circle id="ring-track" cx="200" cy="170" r="110" stroke="#E6E6E6" stroke-width="20"/>
+    <circle id="ring-progress" data-ring-value="89" cx="200" cy="170" r="110" stroke="#111111" stroke-width="20" stroke-dasharray="615.12 691.15" transform="rotate(-90 200 170)"/>
+  </g>
+  <g id="face" stroke-width="7"><circle cx="168" cy="160" r="10" fill="#FFFFFF" stroke-width="5"/><circle cx="168" cy="160" r="4" fill="#111111" stroke="none"/><circle cx="232" cy="160" r="10" fill="#FFFFFF" stroke-width="5"/><circle cx="232" cy="160" r="4" fill="#111111" stroke="none"/><path d="M154 132 Q168 118 182 132"/><path d="M218 132 Q232 118 246 132"/><ellipse cx="200" cy="214" rx="12" ry="15" stroke-width="5"/></g>
+  <g id="arm-left" stroke-width="16">
+    
+    <path d="M104 230 Q64 262 46 300"/>
+    
+    <circle cx="44" cy="304" r="12" fill="#111111" stroke="none"/>
+  </g>
+  <g id="arm-right" transform="translate(400 0) scale(-1 1)" stroke-width="16">
+    
+    <path d="M104 230 Q64 262 46 300"/>
+    
+    <circle cx="44" cy="304" r="12" fill="#111111" stroke="none"/>
+  </g>
+  </g>
+</svg>

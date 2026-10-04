@@ -6,8 +6,13 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		68CDDEC8306E8A0C00EE6C11 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 68CDDEC7306E8A0C00EE6C11 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		68CDDEAB306E2D3C00EE6C11 /* 84Days.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 84Days.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		68CDDEE8306FF06C00EE6C11 /* -4Days-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "-4Days-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -22,6 +27,7 @@
 		68CDDEA8306E2D3C00EE6C11 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				68CDDEC8306E8A0C00EE6C11 /* Supabase in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -30,7 +36,9 @@
 		68CDDEA2306E2D3C00EE6C11 = {
 			isa = PBXGroup;
 			children = (
+				68CDDEE8306FF06C00EE6C11 /* -4Days-Info.plist */,
 				68CDDEAD306E2D3C00EE6C11 /* 84Days */,
+				68CDDEC3306E89DB00EE6C11 /* Frameworks */,
 				68CDDEAC306E2D3C00EE6C11 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +49,13 @@
 				68CDDEAB306E2D3C00EE6C11 /* 84Days.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		68CDDEC3306E89DB00EE6C11 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -60,6 +75,9 @@
 				68CDDEAD306E2D3C00EE6C11 /* 84Days */,
 			);
 			name = 84Days;
+			packageProductDependencies = (
+				68CDDEC7306E8A0C00EE6C11 /* Supabase */,
+			);
 			productName = 84Days;
 			productReference = 68CDDEAB306E2D3C00EE6C11 /* 84Days.app */;
 			productType = "com.apple.product-type.application";
@@ -88,6 +106,9 @@
 			);
 			mainGroup = 68CDDEA2306E2D3C00EE6C11;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				68CDDEC6306E8A0500EE6C11 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 68CDDEAC306E2D3C00EE6C11 /* Products */;
 			projectDirPath = "";
@@ -246,6 +267,7 @@
 				DEVELOPMENT_TEAM = 685874V84M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "-4Days-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -278,6 +300,7 @@
 				DEVELOPMENT_TEAM = 685874V84M;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "-4Days-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -320,6 +343,27 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		68CDDEC6306E8A0500EE6C11 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+			traits = (
+			);
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		68CDDEC7306E8A0C00EE6C11 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 68CDDEC6306E8A0500EE6C11 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 68CDDEA3306E2D3C00EE6C11 /* Project object */;
 	validationLevel = 1;
