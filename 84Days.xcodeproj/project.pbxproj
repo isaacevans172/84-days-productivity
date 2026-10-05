@@ -8,11 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		68CDDEC8306E8A0C00EE6C11 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 68CDDEC7306E8A0C00EE6C11 /* Supabase */; };
+		68CDDF343073434B00EE6C11 /* LaunchScreen_FIXED.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68CDDF333073434B00EE6C11 /* LaunchScreen_FIXED.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		68CDDEAB306E2D3C00EE6C11 /* 84Days.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 84Days.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68CDDEE8306FF06C00EE6C11 /* -4Days-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "-4Days-Info.plist"; sourceTree = "<group>"; };
+		68CDDF333073434B00EE6C11 /* LaunchScreen_FIXED.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen_FIXED.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -39,6 +41,7 @@
 				68CDDEE8306FF06C00EE6C11 /* -4Days-Info.plist */,
 				68CDDEAD306E2D3C00EE6C11 /* 84Days */,
 				68CDDEC3306E89DB00EE6C11 /* Frameworks */,
+				68CDDF333073434B00EE6C11 /* LaunchScreen_FIXED.storyboard */,
 				68CDDEAC306E2D3C00EE6C11 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -123,6 +126,7 @@
 		68CDDEA9306E2D3C00EE6C11 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				68CDDF343073434B00EE6C11 /* LaunchScreen_FIXED.storyboard in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -262,6 +266,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 685874V84M;
@@ -270,7 +275,7 @@
 				INFOPLIST_FILE = "-4Days-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen_FIXED;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -295,6 +300,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 685874V84M;
@@ -303,7 +309,7 @@
 				INFOPLIST_FILE = "-4Days-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen_FIXED;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (

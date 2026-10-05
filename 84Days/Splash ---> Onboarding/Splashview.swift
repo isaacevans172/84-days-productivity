@@ -44,7 +44,7 @@ struct SplashView: View {
                 progress = 0.95
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.3) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 finishedLoading = true
             }
         }
