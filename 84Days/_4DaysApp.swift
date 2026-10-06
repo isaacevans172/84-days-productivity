@@ -8,6 +8,7 @@
 import SwiftUI
 import Supabase
 import Auth
+import SwiftData
 
 @main
 struct _4DaysApp: App {
@@ -22,17 +23,19 @@ struct _4DaysApp: App {
             Group {
 
                 if hasCompletedOnboarding {
+
                     ContentView()
+
                 } else {
+
                     SplashView()
                 }
             }
             .onOpenURL { url in
-
                 supabase.auth.handle(url)
-
                 print("✅ Authentication callback handled")
             }
         }
+        .modelContainer(for: CalendarEvent.self)
     }
 }
