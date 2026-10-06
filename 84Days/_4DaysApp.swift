@@ -4,11 +4,10 @@
 //
 //  Created by Isaac Evans on 1/10/2026.
 //
-
 import SwiftUI
+import SwiftData
 import Supabase
 import Auth
-import SwiftData
 
 @main
 struct _4DaysApp: App {
@@ -17,11 +16,8 @@ struct _4DaysApp: App {
     private var hasCompletedOnboarding = false
 
     var body: some Scene {
-
         WindowGroup {
-
             Group {
-
                 if hasCompletedOnboarding {
 
                     ContentView()
@@ -36,6 +32,14 @@ struct _4DaysApp: App {
                 print("✅ Authentication callback handled")
             }
         }
-        .modelContainer(for: CalendarEvent.self)
-    }
+        .modelContainer(for: [
+            LocalUserProfile.self,
+            TaskItem.self,
+            CalendarEvent.self,
+            Reflection.self,
+            FocusSession.self,
+            Habit.self,
+            HabitCompletion.self,
+            Reminder.self
+        ])    }
 }
