@@ -34,6 +34,7 @@ struct _4DaysApp: App {
         }
         .modelContainer(for: [
             LocalUserProfile.self,
+            Goal.self,
             TaskItem.self,
             CalendarEvent.self,
             Reflection.self,
@@ -41,5 +42,6 @@ struct _4DaysApp: App {
             Habit.self,
             HabitCompletion.self,
             Reminder.self
-        ])    }
+        ])
+    }
 }

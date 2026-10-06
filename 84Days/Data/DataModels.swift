@@ -62,12 +62,62 @@ final class LocalUserProfile {
     }
 }
 
+// MARK: - Goal
 
+@Model
+final class Goal {
+
+    // MARK: - Identity
+
+    var id: UUID
+
+    // MARK: - Goal Information
+
+    var name: String
+    var notes: String?
+
+    var icon: String
+    var category: String?
+
+    // The date the user hopes to achieve the goal by.
+    // The goal itself can continue beyond the 84 days.
+    var targetDate: Date?
+
+    // MARK: - Timestamps
+
+    var createdAt: Date
+    var updatedAt: Date
+
+    init(
+        id: UUID = UUID(),
+        name: String,
+        notes: String? = nil,
+        icon: String = "target",
+        category: String? = nil,
+        targetDate: Date? = nil,
+        createdAt: Date = .now,
+        updatedAt: Date = .now
+    ) {
+        self.id = id
+        self.name = name
+        self.notes = notes
+        self.icon = icon
+        self.category = category
+        self.targetDate = targetDate
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+}
 // MARK: - Task
 
 @Model
-final class TaskItem{
+final class TaskItem {
+
+    // MARK: - Identity
+
     var id: UUID
+
+    // MARK: - Basic Information
 
     var name: String
     var notes: String?
@@ -78,11 +128,22 @@ final class TaskItem{
     var icon: String
     var category: String?
 
+    // MARK: - Scheduling
+
     var dueDate: Date?
     var completedAt: Date?
 
+    // MARK: - Goal
+
+    // Optional long-term goal this task contributes toward
+    var goalID: UUID?
+
+    // MARK: - Timestamps
+
     var createdAt: Date
     var updatedAt: Date
+
+    // MARK: - Initialiser
 
     init(
         id: UUID = UUID(),
@@ -94,87 +155,30 @@ final class TaskItem{
         category: String? = nil,
         dueDate: Date? = nil,
         completedAt: Date? = nil,
+        goalID: UUID? = nil,
         createdAt: Date = .now,
         updatedAt: Date = .now
     ) {
         self.id = id
+
         self.name = name
         self.notes = notes
+
         self.isComplete = isComplete
         self.priority = priority
+
         self.icon = icon
         self.category = category
+
         self.dueDate = dueDate
         self.completedAt = completedAt
+
+        self.goalID = goalID
+
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
 }
-
-
-// MARK: - Calendar Event
-
-@Model
-final class CalendarEvent {
-    var id: UUID
-
-    var title: String
-    var notes: String?
-
-    var startDate: Date
-    var endDate: Date
-
-    var isAllDay: Bool
-
-    // MapKit location information
-    var locationName: String?
-    var locationAddress: String?
-    var latitude: Double?
-    var longitude: Double?
-
-    // Recurrence
-    var recurrenceRule: String?
-
-    // Reminder
-    var reminderMinutesBefore: Int?
-
-    var createdAt: Date
-    var updatedAt: Date
-
-    init(
-        id: UUID = UUID(),
-        title: String,
-        notes: String? = nil,
-        startDate: Date,
-        endDate: Date,
-        isAllDay: Bool = false,
-        locationName: String? = nil,
-        locationAddress: String? = nil,
-        latitude: Double? = nil,
-        longitude: Double? = nil,
-        recurrenceRule: String? = nil,
-        reminderMinutesBefore: Int? = nil,
-        createdAt: Date = .now,
-        updatedAt: Date = .now
-    ) {
-        self.id = id
-        self.title = title
-        self.notes = notes
-        self.startDate = startDate
-        self.endDate = endDate
-        self.isAllDay = isAllDay
-        self.locationName = locationName
-        self.locationAddress = locationAddress
-        self.latitude = latitude
-        self.longitude = longitude
-        self.recurrenceRule = recurrenceRule
-        self.reminderMinutesBefore = reminderMinutesBefore
-        self.createdAt = createdAt
-        self.updatedAt = updatedAt
-    }
-}
-
-
 // MARK: - Reflection
 
 @Model
