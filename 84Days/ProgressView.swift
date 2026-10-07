@@ -1,23 +1,7 @@
-//
-//  ProgressView.swift
-//  84Days
-//
-//  Created by Isaac Evans on 7/10/2026.
-//
-
-
 import SwiftUI
 import SwiftData
 
 struct ProgressView: View {
-
-    // MARK: - Data
-
-    @Query(
-        sort: \TaskItem.createdAt,
-        order: .forward
-    )
-    private var tasks: [TaskItem]
 
     @Query(
         sort: \Goal.targetDate,
@@ -25,12 +9,12 @@ struct ProgressView: View {
     )
     private var goals: [Goal]
 
-    // MARK: - Journey
+    @Query
+    private var tasks: [TaskItem]
 
     @AppStorage("journeyStartDate")
-    private var journeyStartDate: Double = Date().timeIntervalSince1970
-
-    // MARK: - Styling
+    private var journeyStartDate: Double =
+        Date().timeIntervalSince1970
 
     private let coral = Color(
         red: 1.0,
@@ -38,12 +22,11 @@ struct ProgressView: View {
         blue: 0.349
     )
 
-    // MARK: - Journey Calculations
+    // MARK: Journey
 
     private var startDate: Date {
         Date(
-            timeIntervalSince1970:
-                journeyStartDate
+            timeIntervalSince1970: journeyStartDate
         )
     }
 
@@ -59,11 +42,12 @@ struct ProgressView: View {
             for: Date()
         )
 
-        let difference = calendar.dateComponents(
-            [.day],
-            from: start,
-            to: today
-        ).day ?? 0
+        let difference =
+            calendar.dateComponents(
+                [.day],
+                from: start,
+                to: today
+            ).day ?? 0
 
         return min(
             84,
@@ -82,57 +66,66 @@ struct ProgressView: View {
     }
 
     private var journeyProgress: Double {
-
         min(
-            1.0,
+            1,
             max(
-                0.0,
-                Double(currentDay) / 84.0
+                0,
+                Double(currentDay) / 84
             )
         )
     }
 
     private var journeyPercentage: Int {
-
-        Int(
-            journeyProgress * 100
-        )
+        Int(journeyProgress * 100)
     }
 
-    // MARK: - Task Calculations
+    // MARK: Goal Progress
 
-    private var completedTasks: Int {
+    private func tasksForGoal(
+        _ goal: Goal
+    ) -> [TaskItem] {
 
         tasks.filter {
-            $0.isComplete
-        }.count
+            $0.goalID == goal.id
+        }
     }
 
-    private var openTasks: Int {
+    private func completedTasksForGoal(
+        _ goal: Goal
+    ) -> Int {
 
-        tasks.filter {
-            !$0.isComplete
-        }.count
+        tasksForGoal(goal)
+            .filter(\.isComplete)
+            .count
     }
 
-    private var taskCompletionRate: Double {
+    private func goalProgress(
+        _ goal: Goal
+    ) -> Double? {
 
-        guard !tasks.isEmpty else {
-            return 0
+        let linkedTasks = tasksForGoal(goal)
+
+        guard !linkedTasks.isEmpty else {
+            return nil
         }
 
-        return Double(completedTasks) /
-            Double(tasks.count)
+        return Double(
+            linkedTasks.filter(\.isComplete).count
+        ) / Double(linkedTasks.count)
     }
 
-    private var taskCompletionPercentage: Int {
+    private func goalPercentage(
+        _ goal: Goal
+    ) -> Int? {
 
-        Int(
-            taskCompletionRate * 100
-        )
+        guard let progress = goalProgress(goal) else {
+            return nil
+        }
+
+        return Int(progress * 100)
     }
 
-    // MARK: - Body
+    // MARK: Body
 
     var body: some View {
 
@@ -146,10 +139,6 @@ struct ProgressView: View {
                 header
 
                 journeyCard
-
-                activitySection
-
-                completionCard
 
                 goalsSection
             }
@@ -165,7 +154,7 @@ struct ProgressView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: - Header
+    // MARK: Header
 
     private var header: some View {
 
@@ -175,28 +164,32 @@ struct ProgressView: View {
         ) {
 
             Text("YOUR JOURNEY")
-                .font(.system(
-                    size: 10,
-                    weight: .bold
-                ))
+                .font(
+                    .system(
+                        size: 10,
+                        weight: .bold
+                    )
+                )
                 .tracking(1)
                 .foregroundStyle(.secondary)
 
             Text("Progress")
-                .font(.system(
-                    size: 32,
-                    weight: .bold
-                ))
+                .font(
+                    .system(
+                        size: 32,
+                        weight: .bold
+                    )
+                )
 
             Text(
-                "See how far you've come."
+                "See how close you are to your goals."
             )
             .font(.system(size: 14))
             .foregroundStyle(.secondary)
         }
     }
 
-    // MARK: - Journey Card
+    // MARK: Journey Card
 
     private var journeyCard: some View {
 
@@ -215,20 +208,24 @@ struct ProgressView: View {
                 ) {
 
                     Text("84 DAYS")
-                        .font(.system(
-                            size: 10,
-                            weight: .bold
-                        ))
+                        .font(
+                            .system(
+                                size: 10,
+                                weight: .bold
+                            )
+                        )
                         .tracking(1)
                         .foregroundStyle(.secondary)
 
                     Text(
                         "Day \(currentDay) of 84"
                     )
-                    .font(.system(
-                        size: 24,
-                        weight: .bold
-                    ))
+                    .font(
+                        .system(
+                            size: 24,
+                            weight: .bold
+                        )
+                    )
                 }
 
                 Spacer()
@@ -241,10 +238,12 @@ struct ProgressView: View {
                     Text(
                         "\(journeyPercentage)%"
                     )
-                    .font(.system(
-                        size: 25,
-                        weight: .bold
-                    ))
+                    .font(
+                        .system(
+                            size: 25,
+                            weight: .bold
+                        )
+                    )
                     .foregroundStyle(coral)
 
                     Text("complete")
@@ -268,8 +267,8 @@ struct ProgressView: View {
                         .fill(coral)
                         .frame(
                             width:
-                                geometry.size.width *
-                                journeyProgress
+                                geometry.size.width
+                                * journeyProgress
                         )
                 }
             }
@@ -308,152 +307,204 @@ struct ProgressView: View {
         )
     }
 
-    // MARK: - Activity
+    // MARK: Goals
 
-    private var activitySection: some View {
+    private var goalsSection: some View {
 
         VStack(
             alignment: .leading,
             spacing: 12
         ) {
 
-            sectionHeader(
-                "ACTIVITY"
-            )
-
-            HStack(spacing: 10) {
-
-                statisticCard(
-                    value: "\(tasks.count)",
-                    title: "Total tasks",
-                    icon: "checkmark.circle"
+            Text("GOAL PROGRESS")
+                .font(
+                    .system(
+                        size: 10,
+                        weight: .bold
+                    )
                 )
+                .tracking(1)
+                .foregroundStyle(.secondary)
 
-                statisticCard(
-                    value: "\(completedTasks)",
-                    title: "Completed",
-                    icon: "checkmark.circle.fill"
-                )
+            if goals.isEmpty {
 
-                statisticCard(
-                    value: "\(openTasks)",
-                    title: "Open",
-                    icon: "circle"
-                )
+                emptyGoalsCard
+
+            } else {
+
+                ForEach(goals) { goal in
+                    goalProgressCard(goal)
+                }
             }
         }
     }
 
-    private func statisticCard(
-        value: String,
-        title: String,
-        icon: String
+    // MARK: Goal Card
+
+    private func goalProgressCard(
+        _ goal: Goal
     ) -> some View {
 
-        VStack(
-            alignment: .leading,
-            spacing: 9
-        ) {
+        let linkedTasks = tasksForGoal(goal)
+        let completed = completedTasksForGoal(goal)
+        let progress = goalProgress(goal)
+        let percentage = goalPercentage(goal)
 
-            Image(systemName: icon)
-                .font(.system(size: 17))
-                .foregroundStyle(coral)
-
-            Text(value)
-                .font(.system(
-                    size: 23,
-                    weight: .bold
-                ))
-
-            Text(title)
-                .font(.system(size: 10))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .padding(14)
-        .background(
-            Color(.secondarySystemBackground),
-            in: RoundedRectangle(
-                cornerRadius: 17
-            )
-        )
-    }
-
-    // MARK: - Completion
-
-    private var completionCard: some View {
-
-        VStack(
+        return VStack(
             alignment: .leading,
             spacing: 14
         ) {
 
-            HStack {
+            HStack(spacing: 12) {
+
+                Image(systemName: goal.icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(coral)
+                    .frame(
+                        width: 42,
+                        height: 42
+                    )
+                    .background(
+                        coral.opacity(0.10),
+                        in: RoundedRectangle(
+                            cornerRadius: 12
+                        )
+                    )
 
                 VStack(
                     alignment: .leading,
                     spacing: 4
                 ) {
 
-                    Text("TASK COMPLETION")
-                        .font(.system(
-                            size: 10,
-                            weight: .bold
-                        ))
-                        .tracking(1)
-                        .foregroundStyle(.secondary)
+                    Text(goal.name)
+                        .font(
+                            .system(
+                                size: 16,
+                                weight: .bold
+                            )
+                        )
+                        .lineLimit(2)
 
-                    Text(
-                        "\(taskCompletionPercentage)%"
-                    )
-                    .font(.system(
-                        size: 28,
-                        weight: .bold
-                    ))
+                    if let category = goal.category,
+                       !category.isEmpty {
+
+                        Text(category)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()
 
-                Image(
-                    systemName:
-                        "chart.bar.fill"
-                )
-                .font(.system(size: 23))
-                .foregroundStyle(coral)
-            }
+                if let percentage {
 
-            GeometryReader { geometry in
-
-                ZStack(alignment: .leading) {
-
-                    Capsule()
-                        .fill(
-                            Color(
-                                .tertiarySystemBackground
+                    Text("\(percentage)%")
+                        .font(
+                            .system(
+                                size: 19,
+                                weight: .bold
                             )
                         )
-
-                    Capsule()
-                        .fill(coral)
-                        .frame(
-                            width:
-                                geometry.size.width *
-                                taskCompletionRate
-                        )
+                        .foregroundStyle(coral)
                 }
             }
-            .frame(height: 8)
+
+            if let progress {
+
+                GeometryReader { geometry in
+
+                    ZStack(alignment: .leading) {
+
+                        Capsule()
+                            .fill(
+                                Color(
+                                    .tertiarySystemBackground
+                                )
+                            )
+
+                        Capsule()
+                            .fill(coral)
+                            .frame(
+                                width:
+                                    geometry.size.width
+                                    * progress
+                            )
+                    }
+                }
+                .frame(height: 8)
+
+                HStack {
+
+                    Text(
+                        "\(completed) of \(linkedTasks.count) tasks completed"
+                    )
+
+                    Spacer()
+
+                    if let targetDate = goal.targetDate {
+
+                        Text(
+                            targetDate.formatted(
+                                .dateTime
+                                    .day()
+                                    .month(.abbreviated)
+                            )
+                        )
+                    }
+                }
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+
+            } else {
+
+                Text("No tasks linked yet")
+                    .font(
+                        .system(
+                            size: 12,
+                            weight: .medium
+                        )
+                    )
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(17)
+        .frame(
+            maxWidth: .infinity,
+            alignment: .leading
+        )
+        .background(
+            Color(.secondarySystemBackground),
+            in: RoundedRectangle(
+                cornerRadius: 20
+            )
+        )
+    }
+
+    // MARK: Empty Goals
+
+    private var emptyGoalsCard: some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: 7
+        ) {
+
+            Image(systemName: "target")
+                .font(.system(size: 24))
+                .foregroundStyle(coral)
+
+            Text("No goals yet")
+                .font(
+                    .system(
+                        size: 16,
+                        weight: .bold
+                    )
+                )
 
             Text(
-                tasks.isEmpty
-                ? "You haven't created any tasks yet."
-                : "\(completedTasks) of \(tasks.count) tasks completed."
+                "Create a long-term goal and link tasks to it to start tracking your progress."
             )
-            .font(.system(size: 12))
+            .font(.system(size: 13))
             .foregroundStyle(.secondary)
         }
         .padding(18)
@@ -467,150 +518,5 @@ struct ProgressView: View {
                 cornerRadius: 20
             )
         )
-    }
-
-    // MARK: - Goals
-
-    private var goalsSection: some View {
-
-        VStack(
-            alignment: .leading,
-            spacing: 11
-        ) {
-
-            sectionHeader(
-                "LONG-TERM GOALS"
-            )
-
-            if goals.isEmpty {
-
-                VStack(
-                    alignment: .leading,
-                    spacing: 6
-                ) {
-
-                    Text(
-                        "No long-term goals yet."
-                    )
-                    .font(.system(
-                        size: 14,
-                        weight: .semibold
-                    ))
-
-                    Text(
-                        "Your goals will appear here as you add them."
-                    )
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                }
-                .padding(16)
-                .frame(
-                    maxWidth: .infinity,
-                    alignment: .leading
-                )
-                .background(
-                    Color(.secondarySystemBackground),
-                    in: RoundedRectangle(
-                        cornerRadius: 17
-                    )
-                )
-
-            } else {
-
-                ForEach(goals) { goal in
-
-                    goalRow(goal)
-                }
-            }
-        }
-    }
-
-    private func goalRow(
-        _ goal: Goal
-    ) -> some View {
-
-        HStack(spacing: 12) {
-
-            Image(
-                systemName: goal.icon
-            )
-            .font(.system(size: 17))
-            .foregroundStyle(coral)
-            .frame(
-                width: 38,
-                height: 38
-            )
-            .background(
-                coral.opacity(0.10),
-                in: RoundedRectangle(
-                    cornerRadius: 11
-                )
-            )
-
-            VStack(
-                alignment: .leading,
-                spacing: 4
-            ) {
-
-                Text(goal.name)
-                    .font(.system(
-                        size: 14,
-                        weight: .semibold
-                    ))
-
-                if let category = goal.category,
-                   !category.isEmpty {
-
-                    Text(category)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
-                }
-
-                if let targetDate = goal.targetDate {
-
-                    Text(
-                        "Target: " +
-                        targetDate.formatted(
-                            .dateTime
-                                .day()
-                                .month(.abbreviated)
-                                .year()
-                        )
-                    )
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-                }
-            }
-
-            Spacer()
-
-            Image(
-                systemName: "chevron.right"
-            )
-            .font(.system(size: 11))
-            .foregroundStyle(.tertiary)
-        }
-        .padding(14)
-        .background(
-            Color(.secondarySystemBackground),
-            in: RoundedRectangle(
-                cornerRadius: 17
-            )
-        )
-    }
-
-    // MARK: - Section Header
-
-    private func sectionHeader(
-        _ title: String
-    ) -> some View {
-
-        Text(title)
-            .font(.system(
-                size: 10,
-                weight: .bold
-            ))
-            .tracking(1)
-            .foregroundStyle(.secondary)
     }
 }

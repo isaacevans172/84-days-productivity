@@ -6,6 +6,9 @@ struct ProfileView: View {
     @Query
     private var profiles: [LocalUserProfile]
 
+    @AppStorage("selectedAvatar")
+    private var selectedAvatar = "01-deadpan"
+
     @Environment(\.dismiss)
     private var dismiss
 
@@ -16,40 +19,36 @@ struct ProfileView: View {
     )
 
     private var profile: LocalUserProfile? {
-
         profiles.first
     }
 
+    // The onboarding selection is the source of truth.
+    // SwiftData is only a fallback for older profiles.
     private var avatarName: String {
+        if !selectedAvatar.isEmpty {
+            return selectedAvatar
+        }
 
-        profile?.avatar ?? "01-deadpan"
+        return profile?.avatar ?? "01-deadpan"
     }
 
     private var fullName: String {
-
         guard let profile else {
             return "Your Profile"
         }
 
-        let name =
-            "\(profile.firstName) \(profile.lastName)"
-                .trimmingCharacters(
-                    in: .whitespaces
-                )
+        let name = "\(profile.firstName) \(profile.lastName)"
+            .trimmingCharacters(in: .whitespaces)
 
-        return name.isEmpty
-            ? "Your Profile"
-            : name
+        return name.isEmpty ? "Your Profile" : name
     }
 
     var body: some View {
-
         List {
 
             // MARK: Profile
 
             Section {
-
                 VStack(spacing: 12) {
 
                     Image(avatarName)
@@ -60,9 +59,7 @@ struct ProfileView: View {
                             height: 105
                         )
                         .background(
-                            Color(
-                                .secondarySystemBackground
-                            ),
+                            Color(.secondarySystemBackground),
                             in: Circle()
                         )
                         .clipShape(Circle())
@@ -75,23 +72,22 @@ struct ProfileView: View {
                         )
 
                     Text(fullName)
-                        .font(.system(
-                            size: 20,
-                            weight: .bold
-                        ))
+                        .font(
+                            .system(
+                                size: 20,
+                                weight: .bold
+                            )
+                        )
 
-                    if let email = profile?.email {
+                    if let email = profile?.email,
+                       !email.isEmpty {
 
                         Text(email)
                             .font(.system(size: 12))
-                            .foregroundStyle(
-                                .secondary
-                            )
+                            .foregroundStyle(.secondary)
                     }
                 }
-                .frame(
-                    maxWidth: .infinity
-                )
+                .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
             }
 
@@ -106,50 +102,39 @@ struct ProfileView: View {
 
                 LabeledContent(
                     "Current streak",
-                    value:
-                        "\(profile?.currentStreak ?? 0) days"
+                    value: "\(profile?.currentStreak ?? 0) days"
                 )
 
                 LabeledContent(
                     "Longest streak",
-                    value:
-                        "\(profile?.longestStreak ?? 0) days"
+                    value: "\(profile?.longestStreak ?? 0) days"
                 )
 
                 LabeledContent(
                     "Daily goal",
-                    value:
-                        "\(profile?.dailyGoal ?? 3) tasks"
+                    value: "\(profile?.dailyGoal ?? 3) tasks"
                 )
             }
 
-            // MARK: Progress
+            // MARK: Your Journey
 
             Section("Your Journey") {
 
                 NavigationLink {
-
                     ProgressView()
-
                 } label: {
-
                     Label(
                         "Progress",
-                        systemImage:
-                            "chart.bar.fill"
+                        systemImage: "chart.bar.fill"
                     )
                 }
 
                 NavigationLink {
-
                     GoalsView()
-
                 } label: {
-
                     Label(
                         "Goals",
-                        systemImage:
-                            "target"
+                        systemImage: "target"
                     )
                 }
             }
@@ -159,14 +144,9 @@ struct ProfileView: View {
             Section("Settings") {
 
                 NavigationLink {
-
                     Text("Notifications")
-                        .navigationTitle(
-                            "Notifications"
-                        )
-
+                        .navigationTitle("Notifications")
                 } label: {
-
                     Label(
                         "Notifications",
                         systemImage: "bell"
@@ -174,18 +154,12 @@ struct ProfileView: View {
                 }
 
                 NavigationLink {
-
                     Text("Appearance")
-                        .navigationTitle(
-                            "Appearance"
-                        )
-
+                        .navigationTitle("Appearance")
                 } label: {
-
                     Label(
                         "Appearance",
-                        systemImage:
-                            "paintbrush"
+                        systemImage: "paintbrush"
                     )
                 }
             }
@@ -213,21 +187,16 @@ struct ProfileView: View {
                     "Sign Out",
                     role: .destructive
                 ) {
-
-                    // Connect to the final
-                    // Supabase auth flow here.
+                    // Connect to final Supabase auth flow.
                 }
             }
         }
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-
             ToolbarItem(
-                placement:
-                    .confirmationAction
+                placement: .confirmationAction
             ) {
-
                 Button("Done") {
                     dismiss()
                 }

@@ -20,32 +20,53 @@ struct TasksView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(
-                    alignment: .leading,
-                    spacing: 22
-                ) {
-                    header
-                    suggestedTasks
-                    filterBar
-                    taskSections
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .padding(.bottom, 110)
+
+        ScrollView {
+
+            VStack(
+                alignment: .leading,
+                spacing: 22
+            ) {
+
+                header
+                suggestedTasks
+                filterBar
+                taskSections
             }
-            .scrollIndicators(.hidden)
-            .background(Color(.systemBackground))
-            .safeAreaInset(edge: .bottom) {
-                addTaskButton
-            }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            .padding(.bottom, 110)
         }
-        .sheet(isPresented: $showingAddTask) {
+        .scrollIndicators(.hidden)
+        .background(
+            Color(.systemBackground)
+        )
+
+        // Add Task sits above the tab bar
+        .safeAreaInset(
+            edge: .bottom,
+            spacing: 0
+        ) {
+
+            addTaskButton
+                .background(
+                    .ultraThinMaterial
+                )
+        }
+
+        // MARK: Add Task Sheet
+
+        .sheet(
+            isPresented: $showingAddTask
+        ) {
+
             NavigationStack {
                 TaskEditorView()
             }
         }
+
+        // MARK: Priority Add Sheet
+
         .sheet(
             isPresented: Binding(
                 get: {
@@ -58,9 +79,11 @@ struct TasksView: View {
                 }
             )
         ) {
+
             NavigationStack {
                 TaskEditorView(
-                    defaultPriority: addingPriority ?? .medium
+                    defaultPriority:
+                        addingPriority ?? .medium
                 )
             }
         }
@@ -69,37 +92,46 @@ struct TasksView: View {
     // MARK: - Header
 
     private var header: some View {
+
         HStack {
+
             VStack(
                 alignment: .leading,
                 spacing: 4
             ) {
+
                 Text("YOUR TASKS")
-                    .font(.system(
-                        size: 11,
-                        weight: .bold
-                    ))
+                    .font(
+                        .system(
+                            size: 11,
+                            weight: .bold
+                        )
+                    )
                     .tracking(1)
                     .foregroundStyle(.secondary)
 
                 Text("Tasks")
-                    .font(.system(
-                        size: 32,
-                        weight: .bold
-                    ))
+                    .font(
+                        .system(
+                            size: 32,
+                            weight: .bold
+                        )
+                    )
             }
 
             Spacer()
 
             Menu {
+
                 Button {
                     filter = .all
                 } label: {
                     Label(
                         "All Tasks",
-                        systemImage: filter == .all
-                        ? "checkmark"
-                        : "list.bullet"
+                        systemImage:
+                            filter == .all
+                            ? "checkmark"
+                            : "list.bullet"
                     )
                 }
 
@@ -108,9 +140,10 @@ struct TasksView: View {
                 } label: {
                     Label(
                         "Incomplete",
-                        systemImage: filter == .incomplete
-                        ? "checkmark"
-                        : "circle"
+                        systemImage:
+                            filter == .incomplete
+                            ? "checkmark"
+                            : "circle"
                     )
                 }
 
@@ -119,15 +152,18 @@ struct TasksView: View {
                 } label: {
                     Label(
                         "Completed",
-                        systemImage: filter == .completed
-                        ? "checkmark"
-                        : "checkmark.circle"
+                        systemImage:
+                            filter == .completed
+                            ? "checkmark"
+                            : "checkmark.circle"
                     )
                 }
 
                 Divider()
 
-                Button(role: .destructive) {
+                Button(
+                    role: .destructive
+                ) {
                     deleteCompleted()
                 } label: {
                     Label(
@@ -135,10 +171,15 @@ struct TasksView: View {
                         systemImage: "trash"
                     )
                 }
+
             } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.system(size: 25))
-                    .foregroundStyle(.secondary)
+
+                Image(
+                    systemName:
+                        "ellipsis.circle"
+                )
+                .font(.system(size: 25))
+                .foregroundStyle(.secondary)
             }
         }
     }
@@ -146,27 +187,35 @@ struct TasksView: View {
     // MARK: - Suggested Tasks
 
     private var suggestedTasks: some View {
+
         VStack(
             alignment: .leading,
             spacing: 10
         ) {
+
             Text("SUGGESTED STEPS")
-                .font(.system(
-                    size: 11,
-                    weight: .bold
-                ))
+                .font(
+                    .system(
+                        size: 11,
+                        weight: .bold
+                    )
+                )
                 .tracking(1)
                 .foregroundStyle(.secondary)
 
-            Text("Small actions to help you make progress.")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+            Text(
+                "Small actions to help you make progress."
+            )
+            .font(.system(size: 13))
+            .foregroundStyle(.secondary)
 
             ScrollView(
                 .horizontal,
                 showsIndicators: false
             ) {
+
                 HStack(spacing: 10) {
+
                     suggestedButton(
                         title: "Review today's goals",
                         priority: .high
@@ -205,7 +254,9 @@ struct TasksView: View {
         title: String,
         priority: TaskPriority
     ) -> some View {
+
         Button {
+
             let task = TaskItem(
                 name: title,
                 priority: priority,
@@ -213,16 +264,24 @@ struct TasksView: View {
             )
 
             modelContext.insert(task)
+
         } label: {
+
             HStack(spacing: 7) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 13))
+
+                Image(
+                    systemName:
+                        "plus.circle.fill"
+                )
+                .font(.system(size: 13))
 
                 Text(title)
-                    .font(.system(
-                        size: 13,
-                        weight: .medium
-                    ))
+                    .font(
+                        .system(
+                            size: 13,
+                            weight: .medium
+                        )
+                    )
                     .lineLimit(1)
             }
             .padding(.horizontal, 13)
@@ -238,7 +297,9 @@ struct TasksView: View {
     // MARK: - Filter
 
     private var filterBar: some View {
+
         HStack(spacing: 8) {
+
             filterButton(
                 title: "All",
                 filter: .all
@@ -262,14 +323,18 @@ struct TasksView: View {
         title: String,
         filter: TaskFilter
     ) -> some View {
+
         Button {
             self.filter = filter
         } label: {
+
             Text(title)
-                .font(.system(
-                    size: 13,
-                    weight: .semibold
-                ))
+                .font(
+                    .system(
+                        size: 13,
+                        weight: .semibold
+                    )
+                )
                 .foregroundStyle(
                     self.filter == filter
                     ? .white
@@ -280,7 +345,9 @@ struct TasksView: View {
                 .background(
                     self.filter == filter
                     ? coral
-                    : Color(.secondarySystemBackground),
+                    : Color(
+                        .secondarySystemBackground
+                    ),
                     in: Capsule()
                 )
         }
@@ -290,10 +357,12 @@ struct TasksView: View {
     // MARK: - Task Sections
 
     private var taskSections: some View {
+
         VStack(
             alignment: .leading,
             spacing: 24
         ) {
+
             prioritySection(
                 title: "High",
                 priority: .high
@@ -324,49 +393,69 @@ struct TasksView: View {
             alignment: .leading,
             spacing: 9
         ) {
-            HStack {
-                Text(title)
-                    .font(.system(
-                        size: 17,
-                        weight: .bold
-                    ))
 
-                Text("\(sectionTasks.count)")
-                    .font(.system(
+            HStack {
+
+                Text(title)
+                    .font(
+                        .system(
+                            size: 17,
+                            weight: .bold
+                        )
+                    )
+
+                Text(
+                    "\(sectionTasks.count)"
+                )
+                .font(
+                    .system(
                         size: 11,
                         weight: .bold
-                    ))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(
-                        Color(.tertiarySystemBackground),
-                        in: Capsule()
                     )
+                )
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Color(
+                        .tertiarySystemBackground
+                    ),
+                    in: Capsule()
+                )
 
                 Spacer()
 
                 Button {
+
                     addingPriority = priority
+
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.system(
+
+                    Image(
+                        systemName: "plus"
+                    )
+                    .font(
+                        .system(
                             size: 17,
                             weight: .semibold
-                        ))
-                        .frame(
-                            width: 32,
-                            height: 32
                         )
-                        .background(
-                            Color(.secondarySystemBackground),
-                            in: Circle()
-                        )
+                    )
+                    .frame(
+                        width: 32,
+                        height: 32
+                    )
+                    .background(
+                        Color(
+                            .secondarySystemBackground
+                        ),
+                        in: Circle()
+                    )
                 }
                 .buttonStyle(.plain)
             }
 
             if sectionTasks.isEmpty {
+
                 Text(
                     filter == .completed
                     ? "No completed tasks here."
@@ -375,7 +464,9 @@ struct TasksView: View {
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
                 .padding(.vertical, 8)
+
             } else {
+
                 ForEach(sectionTasks) { task in
                     taskRow(task)
                 }
@@ -392,12 +483,16 @@ struct TasksView: View {
         HStack(spacing: 12) {
 
             Button {
+
                 toggleTask(task)
+
             } label: {
+
                 Image(
-                    systemName: task.isComplete
-                    ? "checkmark.circle.fill"
-                    : "circle"
+                    systemName:
+                        task.isComplete
+                        ? "checkmark.circle.fill"
+                        : "circle"
                 )
                 .font(.system(size: 24))
                 .foregroundStyle(
@@ -409,26 +504,38 @@ struct TasksView: View {
             .buttonStyle(.plain)
 
             NavigationLink {
-                TaskEditorView(task: task)
+
+                TaskEditorView(
+                    task: task
+                )
+
             } label: {
+
                 VStack(
                     alignment: .leading,
                     spacing: 5
                 ) {
+
                     Text(
                         task.name.isEmpty
                         ? "Untitled task"
                         : task.name
                     )
-                    .font(.system(
-                        size: 15,
-                        weight: .semibold
-                    ))
-                    .strikethrough(task.isComplete)
+                    .font(
+                        .system(
+                            size: 15,
+                            weight: .semibold
+                        )
+                    )
+                    .strikethrough(
+                        task.isComplete
+                    )
 
                     HStack(spacing: 8) {
+
                         if let category = task.category,
                            !category.isEmpty {
+
                             Label(
                                 category,
                                 systemImage: "tag"
@@ -436,6 +543,7 @@ struct TasksView: View {
                         }
 
                         if let dueDate = task.dueDate {
+
                             Label(
                                 dueDate.formatted(
                                     .dateTime
@@ -456,7 +564,9 @@ struct TasksView: View {
             }
             .buttonStyle(.plain)
 
-            priorityBadge(task.priority)
+            priorityBadge(
+                task.priority
+            )
         }
         .padding(15)
         .background(
@@ -470,11 +580,18 @@ struct TasksView: View {
     // MARK: - Add Task Button
 
     private var addTaskButton: some View {
+
         Button {
+
             showingAddTask = true
+
         } label: {
+
             HStack {
-                Image(systemName: "plus")
+
+                Image(
+                    systemName: "plus"
+                )
 
                 Text("Add Task")
                     .fontWeight(.bold)
@@ -490,7 +607,7 @@ struct TasksView: View {
                 )
             )
             .padding(.horizontal, 20)
-            .padding(.bottom, 8)
+            .padding(.bottom, 10)
         }
         .buttonStyle(.plain)
         .background(
@@ -510,7 +627,9 @@ struct TasksView: View {
                 $0.priority == priority
             }
             .filter {
+
                 switch filter {
+
                 case .all:
                     return true
 
@@ -522,14 +641,19 @@ struct TasksView: View {
                 }
             }
             .sorted {
-                switch ($0.dueDate, $1.dueDate) {
+
+                switch (
+                    $0.dueDate,
+                    $1.dueDate
+                ) {
+
                 case let (a?, b?):
                     return a < b
 
-                case (_?, nil):
+                case (_, nil):
                     return true
 
-                case (nil, _?):
+                case (nil, _):
                     return false
 
                 default:
@@ -543,9 +667,11 @@ struct TasksView: View {
     private func toggleTask(
         _ task: TaskItem
     ) {
+
         task.isComplete.toggle()
 
-        task.completedAt = task.isComplete
+        task.completedAt =
+            task.isComplete
             ? .now
             : nil
 
@@ -553,8 +679,10 @@ struct TasksView: View {
     }
 
     private func deleteCompleted() {
+
         for task in tasks
         where task.isComplete {
+
             modelContext.delete(task)
         }
     }
@@ -570,27 +698,34 @@ struct TasksView: View {
     private func priorityBadge(
         _ priority: TaskPriority
     ) -> some View {
-        Text(priority.rawValue.capitalized)
-            .font(.system(
+
+        Text(
+            priority.rawValue.capitalized
+        )
+        .font(
+            .system(
                 size: 10,
                 weight: .bold
-            ))
-            .foregroundStyle(
-                priorityColor(priority)
             )
-            .padding(.horizontal, 9)
-            .padding(.vertical, 6)
-            .background(
-                priorityColor(priority)
-                    .opacity(0.13),
-                in: Capsule()
-            )
+        )
+        .foregroundStyle(
+            priorityColor(priority)
+        )
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(
+            priorityColor(priority)
+                .opacity(0.13),
+            in: Capsule()
+        )
     }
 
     private func priorityColor(
         _ priority: TaskPriority
     ) -> Color {
+
         switch priority {
+
         case .high:
             return .red
 

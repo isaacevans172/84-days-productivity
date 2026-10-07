@@ -5,43 +5,33 @@ struct HomeView: View {
 
     // MARK: - Data
 
-    @Query(
-        sort: \TaskItem.dueDate
-    )
+    @Query(sort: \TaskItem.dueDate)
     private var tasks: [TaskItem]
 
-    @Query(
-        sort: \CalendarEvent.startDate
-    )
-    private var events: [CalendarEvent]
-
-    @Query
+    @Query(sort: \Goal.createdAt)
     private var goals: [Goal]
 
-    @Query
-    private var profiles: [LocalUserProfile]
+    @Query(sort: \CalendarEvent.startDate)
+    private var events: [CalendarEvent]
+
+    // MARK: - User Data
+
+    @AppStorage("firstName")
+    private var firstName = ""
+
+    @AppStorage("selectedAvatar")
+    private var selectedAvatar = ""
+
+    @AppStorage("journeyStartDate")
+    private var journeyStartDate: Double = 0
 
     // MARK: - State
 
-    @State private var showingProfile = false
+    @State private var selectedDate = Date()
     @State private var showingGoals = false
-    @State private var showingMascotChat = false
+    @State private var showingProfile = false
 
-    @State private var mascotState =
-        MascotEngine.state(
-            for: .openedApp,
-            context: MascotContext(
-                isFirstDay: true
-            )
-        )
-
-    // MARK: - Storage
-
-    @AppStorage("journeyStartDate")
-    private var journeyStartDate:
-        Double = Date().timeIntervalSince1970
-
-    // MARK: - Styling
+    // MARK: - Constants
 
     private let coral = Color(
         red: 1.0,
@@ -49,93 +39,53 @@ struct HomeView: View {
         blue: 0.349
     )
 
-    // MARK: - Journey
+    private let calendar = Calendar.current
 
-    private var journeyDay: Int {
+    // MARK: - Computed Properties
 
-        let calendar = Calendar.current
-
-        let start = calendar.startOfDay(
-            for: Date(
-                timeIntervalSince1970:
-                    journeyStartDate
-            )
-        )
-
-        let today = calendar.startOfDay(
-            for: Date()
-        )
-
-        let difference =
-            calendar.dateComponents(
-                [.day],
-                from: start,
-                to: today
-            ).day ?? 0
-
-        return min(
-            84,
-            max(
-                1,
-                difference + 1
-            )
-        )
+    private var welcomeName: String {
+        firstName.isEmpty ? "User" : firstName
     }
 
-    private var journeyProgress: Double {
-
-        Double(journeyDay) / 84.0
-    }
-
-    private var currentWeek: Int {
-
-        min(
-            12,
-            max(
-                1,
-                Int(
-                    ceil(
-                        Double(journeyDay) / 7.0
-                    )
-                )
-            )
-        )
-    }
-
-    // MARK: - Today
-
-    private var today: Date {
-
-        Calendar.current.startOfDay(
-            for: Date()
-        )
+    private var avatarName: String {
+        selectedAvatar.isEmpty
+            ? "02-smug"
+            : selectedAvatar
     }
 
     private var todayTasks: [TaskItem] {
 
-        tasks.filter { task in
+        tasks
+            .filter { task in
 
-            guard let dueDate = task.dueDate
-            else {
-                return false
+                guard let dueDate = task.dueDate else {
+                    return false
+                }
+
+                return calendar.isDate(
+                    dueDate,
+                    inSameDayAs: selectedDate
+                )
             }
-
-            return Calendar.current.isDate(
-                dueDate,
-                inSameDayAs: today
-            )
-        }
+            .sorted {
+                priorityRank($0.priority)
+                <
+                priorityRank($1.priority)
+            }
     }
 
     private var todayEvents: [CalendarEvent] {
 
-        events.filter {
-
-            $0.occurs(
-                on: today,
-                calendar: .current
-            )
-        }
+        events
+            .filter {
+                eventOccursOnDate(
+                    $0,
+                    date: selectedDate
+                )
+            }
+            .sorted {
+                $0.startDate < $1.startDate
+            }
     }
 
     private var completedToday: Int {
@@ -145,92 +95,106 @@ struct HomeView: View {
         }.count
     }
 
-    // MARK: - Profile
+    private var taskProgress: Double {
 
-    private var profile: LocalUserProfile? {
-
-        profiles.first
-    }
-
-    private var avatarName: String {
-
-        profile?.avatar ?? "01-deadpan"
-    }
-
-    private var displayName: String {
-
-        guard let profile else {
-            return "Welcome back"
+        guard !todayTasks.isEmpty else {
+            return 0
         }
 
-        let name =
-            "\(profile.firstName) \(profile.lastName)"
-                .trimmingCharacters(
-                    in: .whitespaces
-                )
+        return Double(completedToday)
+            / Double(todayTasks.count)
+    }
 
-        return name.isEmpty
-            ? "Welcome back"
-            : name
+    private var dayNumber: Int {
+
+        guard journeyStartDate > 0 else {
+            return 1
+        }
+
+        let startDate = Date(
+            timeIntervalSince1970:
+                journeyStartDate
+        )
+
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(
+                for: startDate
+            ),
+            to: calendar.startOfDay(
+                for: Date()
+            )
+        ).day ?? 0
+
+        return min(
+            max(days + 1, 1),
+            84
+        )
+    }
+
+    private var journeyProgress: Double {
+        Double(dayNumber) / 84.0
     }
 
     // MARK: - Body
 
     var body: some View {
 
-        ScrollView {
+        NavigationStack {
 
-            VStack(
-                alignment: .leading,
-                spacing: 22
+            ScrollView {
+
+                VStack(
+                    alignment: .leading,
+                    spacing: 26
+                ) {
+
+                    header
+
+                    journeyHeader
+
+                    goalsArea
+
+                    journeyMascot
+
+                    todaySection
+
+                    Spacer(
+                        minLength: 30
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 30)
+            }
+            .scrollIndicators(.hidden)
+            .background(
+                Color(.systemBackground)
+            )
+            .navigationBarHidden(true)
+
+            // MARK: Profile
+
+            .sheet(
+                isPresented:
+                    $showingProfile
             ) {
 
-                header
-
-                journeyCard
-
-                mascotSection
-
-                todaySection
-
-                goalsSection
-
-                Spacer(minLength: 80)
+                NavigationStack {
+                    ProfileView()
+                }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 20)
-        }
-        .scrollIndicators(.hidden)
-        .background(
-            Color(.systemBackground)
-        )
-        .onAppear {
 
-            updateMascot()
-        }
-        .sheet(
-            isPresented: $showingProfile
-        ) {
+            // MARK: Goals
 
-            NavigationStack {
-                ProfileView()
-            }
-        }
-        .sheet(
-            isPresented: $showingGoals
-        ) {
+            .sheet(
+                isPresented:
+                    $showingGoals
+            ) {
 
-            NavigationStack {
-                GoalsView()
-            }
-        }
-        .sheet(
-            isPresented: $showingMascotChat
-        ) {
-
-            NavigationStack {
-                MascotChatView()
+                NavigationStack {
+                    GoalsView()
+                }
             }
         }
     }
@@ -246,18 +210,24 @@ struct HomeView: View {
                 spacing: 4
             ) {
 
-                Text(greeting)
-                    .font(.system(
-                        size: 13,
-                        weight: .medium
-                    ))
-                    .foregroundStyle(.secondary)
+                Text("Welcome")
+                    .font(
+                        .system(
+                            size: 15,
+                            weight: .medium
+                        )
+                    )
+                    .foregroundStyle(
+                        .secondary
+                    )
 
-                Text(displayName)
-                    .font(.system(
-                        size: 30,
-                        weight: .bold
-                    ))
+                Text(welcomeName)
+                    .font(
+                        .system(
+                            size: 32,
+                            weight: .bold
+                        )
+                    )
             }
 
             Spacer()
@@ -268,194 +238,134 @@ struct HomeView: View {
 
             } label: {
 
-                Image(avatarName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(
-                        width: 46,
-                        height: 46
+                Group {
+
+                    if selectedAvatar.isEmpty {
+
+                        Image(
+                            systemName:
+                                "person.circle.fill"
+                        )
+                        .resizable()
+
+                    } else {
+
+                        Image(
+                            selectedAvatar
+                        )
+                        .resizable()
+                        .scaledToFit()
+                    }
+                }
+                .frame(
+                    width: 48,
+                    height: 48
+                )
+                .background(
+                    Color(
+                        .secondarySystemBackground
                     )
-                    .background(
-                        Color(.secondarySystemBackground),
-                        in: Circle()
-                    )
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                coral.opacity(0.25),
-                                lineWidth: 2
-                            )
-                    )
+                )
+                .clipShape(
+                    Circle()
+                )
+                .overlay(
+                    Circle()
+                        .stroke(
+                            coral.opacity(0.25),
+                            lineWidth: 2
+                        )
+                )
             }
             .buttonStyle(.plain)
         }
     }
 
-    private var greeting: String {
+    // MARK: - Journey Header
 
-        let hour =
-            Calendar.current.component(
-                .hour,
-                from: Date()
-            )
-
-        switch hour {
-
-        case 5..<12:
-            return "Good morning"
-
-        case 12..<17:
-            return "Good afternoon"
-
-        case 17..<22:
-            return "Good evening"
-
-        default:
-            return "Welcome back"
-        }
-    }
-
-    // MARK: - Journey
-
-    private var journeyCard: some View {
+    private var journeyHeader: some View {
 
         VStack(
             alignment: .leading,
-            spacing: 14
+            spacing: 9
         ) {
 
-            Text("YOUR JOURNEY")
-                .font(.system(
-                    size: 10,
-                    weight: .bold
-                ))
-                .tracking(1)
-                .foregroundStyle(.secondary)
+            HStack(
+                alignment: .bottom
+            ) {
 
-            Text("Your journey starts here")
-                .font(.system(
-                    size: 24,
-                    weight: .bold
-                ))
+                VStack(
+                    alignment: .leading,
+                    spacing: 4
+                ) {
 
-            Text(
-                "84 days to build consistency, make progress and actually get somewhere."
-            )
-            .font(.system(size: 13))
-            .foregroundStyle(.secondary)
+                    Text("YOUR 84 DAYS")
+                        .font(
+                            .system(
+                                size: 11,
+                                weight: .bold
+                            )
+                        )
+                        .tracking(1)
+                        .foregroundStyle(
+                            .secondary
+                        )
+
+                    Text(
+                        "Day \(dayNumber) of 84"
+                    )
+                    .font(
+                        .system(
+                            size: 27,
+                            weight: .bold
+                        )
+                    )
+                }
+
+                Spacer()
+
+                Text(
+                    "\(Int(journeyProgress * 100))%"
+                )
+                .font(
+                    .system(
+                        size: 14,
+                        weight: .bold
+                    )
+                )
+                .foregroundStyle(
+                    coral
+                )
+            }
 
             GeometryReader { geometry in
 
-                ZStack(alignment: .leading) {
+                ZStack(
+                    alignment: .leading
+                ) {
 
                     Capsule()
                         .fill(
-                            Color(
-                                .tertiarySystemBackground
-                            )
+                            Color.secondary
+                                .opacity(0.12)
                         )
 
                     Capsule()
                         .fill(coral)
                         .frame(
                             width:
-                                geometry.size.width *
-                                journeyProgress
+                                geometry.size.width
+                                * journeyProgress
                         )
                 }
             }
-            .frame(height: 7)
-
-            HStack {
-
-                Text(
-                    "Day \(journeyDay) of 84"
-                )
-                .font(.system(
-                    size: 11,
-                    weight: .semibold
-                ))
-
-                Spacer()
-
-                Text(
-                    "Week \(currentWeek) of 12"
-                )
-                .font(.system(
-                    size: 11,
-                    weight: .semibold
-                ))
-                .foregroundStyle(.secondary)
-            }
-        }
-        .padding(19)
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .background(
-            coral.opacity(0.08),
-            in: RoundedRectangle(
-                cornerRadius: 22
-            )
-        )
-    }
-
-    // MARK: - Mascot
-
-    private var mascotSection: some View {
-
-        VStack(spacing: 8) {
-
-            MascotView(
-                state: mascotState
-            )
-            .frame(
-                maxWidth: .infinity
-            )
-
-            Button {
-
-                showingMascotChat = true
-
-            } label: {
-
-                HStack {
-
-                    Text(
-                        mascotState.message
-                    )
-                    .font(.system(
-                        size: 14,
-                        weight: .medium
-                    ))
-                    .foregroundStyle(.primary)
-                    .multilineTextAlignment(.leading)
-
-                    Spacer()
-
-                    Image(
-                        systemName:
-                            "bubble.left.fill"
-                    )
-                    .foregroundStyle(coral)
-                }
-                .padding(14)
-                .background(
-                    Color(.secondarySystemBackground),
-                    in: RoundedRectangle(
-                        cornerRadius: 16
-                    )
-                )
-            }
-            .buttonStyle(.plain)
+            .frame(height: 8)
         }
     }
 
-    // MARK: - Today
+    // MARK: - Goals
 
-    private var todaySection: some View {
+    private var goalsArea: some View {
 
         VStack(
             alignment: .leading,
@@ -464,119 +374,688 @@ struct HomeView: View {
 
             HStack {
 
-                Text("TODAY")
-                    .font(.system(
-                        size: 10,
-                        weight: .bold
-                    ))
+                Text("GOALS")
+                    .font(
+                        .system(
+                            size: 11,
+                            weight: .bold
+                        )
+                    )
                     .tracking(1)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(
+                        .secondary
+                    )
 
                 Spacer()
 
-                Text(
-                    "\(completedToday)/\(todayTasks.count)"
+                Image(
+                    systemName:
+                        "chevron.right"
                 )
-                .font(.system(
-                    size: 11,
-                    weight: .semibold
-                ))
-                .foregroundStyle(.secondary)
-            }
-
-            HStack(spacing: 10) {
-
-                overviewCard(
-                    value:
-                        "\(todayTasks.count)",
-                    title: "Tasks",
-                    icon:
-                        "checkmark.circle"
+                .font(
+                    .system(
+                        size: 12,
+                        weight: .bold
+                    )
                 )
-
-                overviewCard(
-                    value:
-                        "\(todayEvents.count)",
-                    title: "Events",
-                    icon: "calendar"
+                .foregroundStyle(
+                    .secondary
                 )
             }
 
-            if !todayTasks.isEmpty {
+            Button {
 
-                ForEach(
-                    todayTasks.prefix(3)
-                ) { task in
+                showingGoals = true
 
-                    taskRow(task)
+            } label: {
+
+                if goals.isEmpty {
+
+                    emptyGoalsCard
+
+                } else {
+
+                    goalsCard
                 }
             }
-
-            if !todayEvents.isEmpty {
-
-                ForEach(
-                    todayEvents.prefix(3)
-                ) { event in
-
-                    eventRow(event)
-                }
-            }
-
-            if todayTasks.isEmpty &&
-                todayEvents.isEmpty {
-
-                Text(
-                    "Nothing scheduled yet. You've got a clean slate."
-                )
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
-                .padding(.vertical, 8)
-            }
+            .buttonStyle(.plain)
         }
     }
 
-    private func overviewCard(
-        value: String,
-        title: String,
-        icon: String
-    ) -> some View {
+    private var emptyGoalsCard: some View {
 
-        VStack(
-            alignment: .leading,
-            spacing: 8
+        HStack(
+            spacing: 14
         ) {
 
-            Image(systemName: icon)
-                .foregroundStyle(coral)
+            ZStack {
 
-            Text(value)
-                .font(.system(
-                    size: 23,
+                RoundedRectangle(
+                    cornerRadius: 14
+                )
+                .fill(
+                    coral.opacity(0.10)
+                )
+
+                Image(
+                    systemName:
+                        "target"
+                )
+                .font(
+                    .system(
+                        size: 22,
+                        weight: .semibold
+                    )
+                )
+                .foregroundStyle(
+                    coral
+                )
+            }
+            .frame(
+                width: 48,
+                height: 48
+            )
+
+            VStack(
+                alignment: .leading,
+                spacing: 4
+            ) {
+
+                Text(
+                    "Set your goals"
+                )
+                .font(
+                    .system(
+                        size: 17,
+                        weight: .semibold
+                    )
+                )
+
+                Text(
+                    "Tap to create your long-term goals."
+                )
+                .font(
+                    .system(size: 12)
+                )
+                .foregroundStyle(
+                    .secondary
+                )
+            }
+
+            Spacer()
+
+            Image(
+                systemName:
+                    "plus"
+            )
+            .font(
+                .system(
+                    size: 15,
                     weight: .bold
-                ))
-
-            Text(title)
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+                )
+            )
+            .foregroundStyle(
+                coral
+            )
         }
-        .frame(
-            maxWidth: .infinity,
-            alignment: .leading
-        )
-        .padding(15)
+        .padding(16)
         .background(
-            Color(.secondarySystemBackground),
-            in: RoundedRectangle(
-                cornerRadius: 17
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 20
             )
         )
     }
 
-    private func taskRow(
+    private var goalsCard: some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: 12
+        ) {
+
+            ForEach(
+                goals.prefix(3)
+            ) { goal in
+
+                HStack(
+                    spacing: 12
+                ) {
+
+                    ZStack {
+
+                        RoundedRectangle(
+                            cornerRadius: 12
+                        )
+                        .fill(
+                            coral.opacity(0.10)
+                        )
+
+                        Image(
+                            systemName:
+                                goal.icon
+                        )
+                        .font(
+                            .system(
+                                size: 18,
+                                weight: .semibold
+                            )
+                        )
+                        .foregroundStyle(
+                            coral
+                        )
+                    }
+                    .frame(
+                        width: 42,
+                        height: 42
+                    )
+
+                    VStack(
+                        alignment: .leading,
+                        spacing: 3
+                    ) {
+
+                        Text(
+                            goal.name
+                        )
+                        .font(
+                            .system(
+                                size: 15,
+                                weight: .semibold
+                            )
+                        )
+                        .foregroundStyle(
+                            .primary
+                        )
+
+                        if let category =
+                            goal.category,
+                           !category.isEmpty {
+
+                            Text(category)
+                                .font(
+                                    .system(
+                                        size: 11
+                                    )
+                                )
+                                .foregroundStyle(
+                                    .secondary
+                                )
+                        }
+                    }
+
+                    Spacer()
+
+                    Image(
+                        systemName:
+                            "chevron.right"
+                    )
+                    .font(
+                        .caption
+                    )
+                    .foregroundStyle(
+                        .tertiary
+                    )
+                }
+
+                if goal.id !=
+                    goals.prefix(3).last?.id {
+
+                    Divider()
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 20
+            )
+        )
+    }
+
+    // MARK: - Mascot
+
+    private var journeyMascot: some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: 12
+        ) {
+
+            Text(
+                "YOUR JOURNEY STARTS HERE"
+            )
+            .font(
+                .system(
+                    size: 11,
+                    weight: .bold
+                )
+            )
+            .tracking(1)
+            .foregroundStyle(
+                .secondary
+            )
+
+            HStack(
+                alignment: .center,
+                spacing: 12
+            ) {
+
+                // MASCOT ON LEFT
+
+                Image("02-smug")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(
+                        width: 105,
+                        height: 125
+                    )
+
+                // COMMENT ON RIGHT
+
+                VStack(
+                    alignment: .leading,
+                    spacing: 6
+                ) {
+
+                    Text(
+                        mascotComment
+                    )
+                    .font(
+                        .system(
+                            size: 15,
+                            weight: .medium
+                        )
+                    )
+                    .foregroundStyle(
+                        .primary
+                    )
+                    .fixedSize(
+                        horizontal: false,
+                        vertical: true
+                    )
+                }
+                .padding(
+                    .horizontal,
+                    16
+                )
+                .padding(
+                    .vertical,
+                    14
+                )
+                .frame(
+                    maxWidth: .infinity,
+                    alignment: .leading
+                )
+                .background(
+                    Color(
+                        .secondarySystemBackground
+                    )
+                )
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: 18
+                    )
+                )
+            }
+        }
+    }
+
+    // MARK: - Today + Progress
+
+    private var todaySection: some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: 14
+        ) {
+
+            // HEADER
+
+            HStack {
+
+                VStack(
+                    alignment: .leading,
+                    spacing: 3
+                ) {
+
+                    Text("TODAY")
+                        .font(
+                            .system(
+                                size: 11,
+                                weight: .bold
+                            )
+                        )
+                        .tracking(1)
+                        .foregroundStyle(
+                            .secondary
+                        )
+
+                    Text(
+                        selectedDate.formatted(
+                            .dateTime
+                                .weekday(.wide)
+                                .month(.wide)
+                                .day()
+                        )
+                    )
+                    .font(
+                        .system(
+                            size: 22,
+                            weight: .bold
+                        )
+                    )
+                }
+
+                Spacer()
+
+                Button {
+
+                    selectedDate = Date()
+
+                } label: {
+
+                    Text("Today")
+                        .font(
+                            .system(
+                                size: 13,
+                                weight: .semibold
+                            )
+                        )
+                        .foregroundStyle(
+                            coral
+                        )
+                }
+            }
+
+            // TODAY'S PROGRESS
+
+            VStack(
+                alignment: .leading,
+                spacing: 10
+            ) {
+
+                HStack {
+
+                    Text(
+                        "\(completedToday) of \(todayTasks.count) tasks completed"
+                    )
+                    .font(
+                        .system(size: 12)
+                    )
+                    .foregroundStyle(
+                        .secondary
+                    )
+
+                    Spacer()
+
+                    Text(
+                        "\(Int(taskProgress * 100))%"
+                    )
+                    .font(
+                        .system(
+                            size: 12,
+                            weight: .bold
+                        )
+                    )
+                    .foregroundStyle(
+                        coral
+                    )
+                }
+
+                GeometryReader { geometry in
+
+                    ZStack(
+                        alignment: .leading
+                    ) {
+
+                        Capsule()
+                            .fill(
+                                Color.secondary
+                                    .opacity(0.12)
+                            )
+
+                        Capsule()
+                            .fill(coral)
+                            .frame(
+                                width:
+                                    geometry.size.width
+                                    * taskProgress
+                            )
+                    }
+                }
+                .frame(height: 7)
+            }
+
+            // TASKS
+
+            if todayTasks.isEmpty {
+
+                emptyTodayCard
+
+            } else {
+
+                VStack(
+                    spacing: 9
+                ) {
+
+                    ForEach(
+                        todayTasks.prefix(4)
+                    ) { task in
+
+                        taskPreview(task)
+                    }
+                }
+            }
+
+            // EVENTS
+
+            if !todayEvents.isEmpty {
+
+                VStack(
+                    alignment: .leading,
+                    spacing: 10
+                ) {
+
+                    Text("UPCOMING")
+                        .font(
+                            .system(
+                                size: 11,
+                                weight: .bold
+                            )
+                        )
+                        .tracking(1)
+                        .foregroundStyle(
+                            .secondary
+                        )
+
+                    ForEach(
+                        todayEvents.prefix(3)
+                    ) { event in
+
+                        NavigationLink {
+
+                            EventEditorView(
+                                event: event
+                            )
+
+                        } label: {
+
+                            eventPreview(
+                                event
+                            )
+                        }
+                        .buttonStyle(
+                            .plain
+                        )
+                    }
+                }
+            }
+
+            // SMALL STATS
+
+            HStack(
+                spacing: 12
+            ) {
+
+                miniStat(
+                    value:
+                        "\(completedToday)",
+                    label:
+                        "Tasks done",
+                    icon:
+                        "checkmark.circle.fill"
+                )
+
+                miniStat(
+                    value:
+                        "\(todayEvents.count)",
+                    label:
+                        "Events",
+                    icon:
+                        "calendar"
+                )
+            }
+        }
+    }
+
+    // MARK: - Empty Today
+
+    private var emptyTodayCard: some View {
+
+        HStack(
+            spacing: 14
+        ) {
+
+            Image(
+                systemName:
+                    "checkmark.circle"
+            )
+            .font(
+                .title2
+            )
+            .foregroundStyle(
+                .secondary
+            )
+
+            VStack(
+                alignment: .leading,
+                spacing: 4
+            ) {
+
+                Text(
+                    "Nothing planned yet"
+                )
+                .font(
+                    .system(
+                        size: 15,
+                        weight: .semibold
+                    )
+                )
+
+                Text(
+                    "Your tasks will appear here."
+                )
+                .font(
+                    .system(size: 12)
+                )
+                .foregroundStyle(
+                    .secondary
+                )
+            }
+
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 18
+            )
+        )
+    }
+
+    // MARK: - Mini Stat
+
+    private func miniStat(
+        value: String,
+        label: String,
+        icon: String
+    ) -> some View {
+
+        HStack(
+            spacing: 10
+        ) {
+
+            Image(
+                systemName: icon
+            )
+            .foregroundStyle(
+                coral
+            )
+
+            VStack(
+                alignment: .leading,
+                spacing: 2
+            ) {
+
+                Text(value)
+                    .font(
+                        .system(
+                            size: 19,
+                            weight: .bold
+                        )
+                    )
+
+                Text(label)
+                    .font(
+                        .system(size: 10)
+                    )
+                    .foregroundStyle(
+                        .secondary
+                    )
+            }
+
+            Spacer()
+        }
+        .padding(13)
+        .frame(
+            maxWidth: .infinity
+        )
+        .background(
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 16
+            )
+        )
+    }
+
+    // MARK: - Task Preview
+
+    private func taskPreview(
         _ task: TaskItem
     ) -> some View {
 
-        HStack(spacing: 11) {
+        HStack(
+            spacing: 12
+        ) {
 
             Image(
                 systemName:
@@ -584,55 +1063,105 @@ struct HomeView: View {
                     ? "checkmark.circle.fill"
                     : "circle"
             )
+            .font(
+                .system(size: 23)
+            )
             .foregroundStyle(
                 task.isComplete
                 ? coral
                 : .secondary
             )
 
-            Text(
-                task.name.isEmpty
-                ? "Untitled task"
-                : task.name
-            )
-            .font(.system(
-                size: 14,
-                weight: .medium
-            ))
-            .strikethrough(
-                task.isComplete
-            )
+            VStack(
+                alignment: .leading,
+                spacing: 4
+            ) {
+
+                Text(
+                    task.name.isEmpty
+                    ? "Untitled task"
+                    : task.name
+                )
+                .font(
+                    .system(
+                        size: 15,
+                        weight: .semibold
+                    )
+                )
+                .strikethrough(
+                    task.isComplete
+                )
+
+                if let dueDate =
+                    task.dueDate {
+
+                    Text(
+                        dueDate.formatted(
+                            .dateTime
+                                .hour()
+                                .minute()
+                        )
+                    )
+                    .font(
+                        .system(size: 11)
+                    )
+                    .foregroundStyle(
+                        .secondary
+                    )
+                }
+            }
 
             Spacer()
+
+            priorityBadge(
+                task.priority
+            )
         }
-        .padding(13)
+        .padding(14)
         .background(
-            Color(.secondarySystemBackground),
-            in: RoundedRectangle(
-                cornerRadius: 15
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 17
             )
         )
     }
 
-    private func eventRow(
+    // MARK: - Event Preview
+
+    private func eventPreview(
         _ event: CalendarEvent
     ) -> some View {
 
-        HStack(spacing: 11) {
+        HStack(
+            spacing: 12
+        ) {
 
-            Image(systemName: "calendar")
-                .foregroundStyle(coral)
+            Image(
+                systemName:
+                    "calendar"
+            )
+            .foregroundStyle(
+                coral
+            )
 
             VStack(
                 alignment: .leading,
-                spacing: 3
+                spacing: 4
             ) {
 
-                Text(event.title)
-                    .font(.system(
-                        size: 14,
-                        weight: .medium
-                    ))
+                Text(
+                    event.title
+                )
+                .font(
+                    .system(
+                        size: 15,
+                        weight: .semibold
+                    )
+                )
 
                 Text(
                     event.isAllDay
@@ -643,196 +1172,165 @@ struct HomeView: View {
                             .minute()
                     )
                 )
-                .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+                .font(
+                    .system(size: 11)
+                )
+                .foregroundStyle(
+                    .secondary
+                )
             }
 
             Spacer()
+
+            Image(
+                systemName:
+                    "chevron.right"
+            )
+            .font(
+                .caption
+            )
+            .foregroundStyle(
+                .tertiary
+            )
         }
-        .padding(13)
+        .padding(14)
         .background(
-            Color(.secondarySystemBackground),
-            in: RoundedRectangle(
-                cornerRadius: 15
+            Color(
+                .secondarySystemBackground
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 17
             )
         )
     }
 
-    // MARK: - Goals
+    // MARK: - Priority
 
-    private var goalsSection: some View {
+    private func priorityBadge(
+        _ priority: TaskPriority
+    ) -> some View {
 
-        VStack(
-            alignment: .leading,
-            spacing: 11
-        ) {
+        Text(
+            priority.rawValue
+                .capitalized
+        )
+        .font(
+            .system(
+                size: 9,
+                weight: .bold
+            )
+        )
+        .foregroundStyle(
+            priorityColor(priority)
+        )
+        .padding(
+            .horizontal,
+            8
+        )
+        .padding(
+            .vertical,
+            5
+        )
+        .background(
+            priorityColor(priority)
+                .opacity(0.12),
+            in: Capsule()
+        )
+    }
 
-            HStack {
+    private func priorityRank(
+        _ priority: TaskPriority
+    ) -> Int {
 
-                Text("LONG-TERM GOALS")
-                    .font(.system(
-                        size: 10,
-                        weight: .bold
-                    ))
-                    .tracking(1)
-                    .foregroundStyle(.secondary)
+        switch priority {
 
-                Spacer()
+        case .high:
+            return 0
 
-                Button("Manage") {
+        case .medium:
+            return 1
 
-                    showingGoals = true
-                }
-                .font(.system(
-                    size: 12,
-                    weight: .semibold
-                ))
-                .foregroundStyle(coral)
-            }
-
-            if goals.isEmpty {
-
-                Button {
-
-                    showingGoals = true
-
-                } label: {
-
-                    HStack {
-
-                        Image(
-                            systemName:
-                                "plus.circle.fill"
-                        )
-                        .foregroundStyle(coral)
-
-                        VStack(
-                            alignment: .leading,
-                            spacing: 3
-                        ) {
-
-                            Text(
-                                "Add your first goal"
-                            )
-                            .font(.system(
-                                size: 14,
-                                weight: .semibold
-                            ))
-                            .foregroundStyle(.primary)
-
-                            Text(
-                                "Something bigger to work towards after the 84 days."
-                            )
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-
-                        Image(
-                            systemName:
-                                "chevron.right"
-                        )
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                    }
-                    .padding(15)
-                    .background(
-                        Color(.secondarySystemBackground),
-                        in: RoundedRectangle(
-                            cornerRadius: 17
-                        )
-                    )
-                }
-                .buttonStyle(.plain)
-
-            } else {
-
-                ForEach(
-                    goals.prefix(2)
-                ) { goal in
-
-                    HStack(spacing: 12) {
-
-                        Image(
-                            systemName:
-                                goal.icon
-                        )
-                        .foregroundStyle(coral)
-                        .frame(
-                            width: 38,
-                            height: 38
-                        )
-                        .background(
-                            coral.opacity(0.10),
-                            in: RoundedRectangle(
-                                cornerRadius: 11
-                            )
-                        )
-
-                        VStack(
-                            alignment: .leading,
-                            spacing: 3
-                        ) {
-
-                            Text(goal.name)
-                                .font(.system(
-                                    size: 14,
-                                    weight: .semibold
-                                ))
-
-                            if let category =
-                                goal.category {
-
-                                Text(category)
-                                    .font(.system(
-                                        size: 10
-                                    ))
-                                    .foregroundStyle(
-                                        .secondary
-                                    )
-                            }
-                        }
-
-                        Spacer()
-                    }
-                    .padding(14)
-                    .background(
-                        Color(
-                            .secondarySystemBackground
-                        ),
-                        in: RoundedRectangle(
-                            cornerRadius: 17
-                        )
-                    )
-                }
-            }
+        case .low:
+            return 2
         }
     }
 
-    // MARK: - Mascot State
+    private func priorityColor(
+        _ priority: TaskPriority
+    ) -> Color {
 
-    private func updateMascot() {
+        switch priority {
 
-        let context = MascotContext(
-            currentDay: journeyDay,
-            currentStreak:
-                profile?.currentStreak ?? 0,
-            longestStreak:
-                profile?.longestStreak ?? 0,
-            completedDays: 0,
-            missedDays: 0,
-            progressPercentage:
-                journeyProgress * 100,
-            isFirstDay:
-                journeyDay == 1,
-            returnedAfterAbsence: false
-        )
+        case .high:
+            return .red
 
-        mascotState =
-            MascotEngine.state(
-                for: .openedApp,
-                context: context
+        case .medium:
+            return .orange
+
+        case .low:
+            return .green
+        }
+    }
+
+    // MARK: - Mascot Comment
+
+    private var mascotComment: String {
+
+        if todayTasks.isEmpty {
+
+            return "Nothing on the list yet. Bold strategy."
+
+        }
+
+        if completedToday ==
+            todayTasks.count {
+
+            return "Well, look at you. Everything's actually done."
+
+        }
+
+        if completedToday > 0 {
+
+            return "You're making progress. Try not to get distracted now."
+
+        }
+
+        return "You've got things to do. Unfortunately, I cannot do them for you."
+    }
+
+    // MARK: - Event Logic
+
+    private func eventOccursOnDate(
+        _ event: CalendarEvent,
+        date: Date
+    ) -> Bool {
+
+        if event.repeatRule != "Never" {
+
+            return event.occurs(
+                on: date,
+                calendar: calendar
             )
+        }
+
+        let dayStart =
+            calendar.startOfDay(
+                for: date
+            )
+
+        guard let dayEnd =
+            calendar.date(
+                byAdding: .day,
+                value: 1,
+                to: dayStart
+            )
+        else {
+            return false
+        }
+
+        return event.startDate < dayEnd &&
+               event.endDate > dayStart
     }
 }

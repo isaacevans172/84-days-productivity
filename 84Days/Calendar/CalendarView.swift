@@ -1,10 +1,3 @@
-//
-//  CalendarView.swift
-//  84Days
-//
-//  Created by Isaac Evans on 5/10/2026.
-//
-
 import SwiftUI
 import SwiftData
 import EventKit
@@ -29,7 +22,6 @@ struct CalendarView: View {
     // MARK: - State
 
     @State private var selectedDate = Date()
-
     @State private var showingAddEvent = false
     @State private var showingMonthView = false
     @State private var showingDayOverview = false
@@ -49,6 +41,7 @@ struct CalendarView: View {
         }
 
         return (0..<7).compactMap {
+
             calendar.date(
                 byAdding: .day,
                 value: $0,
@@ -65,8 +58,6 @@ struct CalendarView: View {
             for: Date()
         )
 
-        // If we're looking at the current week,
-        // show today first, then following days.
         if currentWeekDates.contains(
             where: {
                 calendar.isDate(
@@ -78,14 +69,21 @@ struct CalendarView: View {
 
             return currentWeekDates
                 .filter {
-                    calendar.startOfDay(for: $0) >= today
+                    calendar.startOfDay(
+                        for: $0
+                    ) >= today
                 }
                 .sorted {
-                    if calendar.isDateInToday($0) {
+
+                    if calendar.isDateInToday(
+                        $0
+                    ) {
                         return true
                     }
 
-                    if calendar.isDateInToday($1) {
+                    if calendar.isDateInToday(
+                        $1
+                    ) {
                         return false
                     }
 
@@ -93,8 +91,6 @@ struct CalendarView: View {
                 }
         }
 
-        // For another week, simply show that week
-        // from earliest to latest.
         return currentWeekDates.sorted()
     }
 
@@ -102,88 +98,90 @@ struct CalendarView: View {
 
     var body: some View {
 
-        NavigationStack {
+        ScrollView {
 
-            ScrollView {
-
-                VStack(
-                    alignment: .leading,
-                    spacing: 0
-                ) {
-
-                    header
-
-                    weekSelector
-
-                    upcomingEvents
-
-                    Spacer(
-                        minLength: 100
-                    )
-                }
-            }
-
-            .background(
-                Color(.systemBackground)
-            )
-
-            .navigationBarHidden(true)
-
-            // MARK: Add Event
-
-            .safeAreaInset(edge: .bottom) {
-
-                addEventButton
-            }
-
-            // MARK: Sheets
-
-            .sheet(
-                isPresented: $showingAddEvent
+            VStack(
+                alignment: .leading,
+                spacing: 0
             ) {
+
+                header
+
+                weekSelector
+
+                upcomingEvents
+
+                Spacer(
+                    minLength: 100
+                )
+            }
+        }
+        .scrollIndicators(.hidden)
+        .background(
+            Color(.systemBackground)
+        )
+        .navigationBarHidden(true)
+
+        // MARK: Add Event
+
+        .safeAreaInset(
+            edge: .bottom,
+            spacing: 0
+        ) {
+
+            addEventButton
+        }
+
+        // MARK: Sheets
+
+        .sheet(
+            isPresented: $showingAddEvent
+        ) {
+
+            NavigationStack {
 
                 EventEditorView(
                     initialDate: selectedDate
                 )
             }
+        }
 
-            .sheet(
-                isPresented: $showingMonthView
-            ) {
+        .sheet(
+            isPresented: $showingMonthView
+        ) {
 
-                MonthCalendarView(
-                    selectedDate: $selectedDate
-                )
+            MonthCalendarView(
+                selectedDate: $selectedDate
+            )
+        }
+
+        .sheet(
+            isPresented: $showingDayOverview
+        ) {
+
+            DayOverviewView(
+                selectedDate: selectedDate
+            )
+        }
+
+        // MARK: Apple Calendar
+
+        .task {
+
+            if !appleCalendar.isConnected {
+                await appleCalendar.requestAccess()
             }
 
-            .sheet(
-                isPresented: $showingDayOverview
-            ) {
+            loadAppleEvents()
+        }
 
-                DayOverviewView(
-                    selectedDate: selectedDate
-                )
-            }
+        .onChange(
+            of: selectedDate
+        ) {
 
-            // MARK: Apple Calendar
-
-            .task {
-
-                if !appleCalendar.isConnected {
-
-                    await appleCalendar.requestAccess()
-                }
-
-                loadAppleEvents()
-            }
-
-            .onChange(of: selectedDate) {
-
-                loadAppleEvents()
-            }
+            loadAppleEvents()
         }
     }
-
 
     // MARK: - Header
 
@@ -217,7 +215,9 @@ struct CalendarView: View {
                                 "chevron.down"
                         )
                         .font(
-                            .caption.weight(.bold)
+                            .caption.weight(
+                                .bold
+                            )
                         )
                     }
                     .font(
@@ -300,7 +300,6 @@ struct CalendarView: View {
         .padding(.top, 20)
     }
 
-
     // MARK: - Week Selector
 
     private var weekSelector: some View {
@@ -364,7 +363,6 @@ struct CalendarView: View {
         }
         .padding(.top, 18)
     }
-
 
     // MARK: - Upcoming Events
 
@@ -467,7 +465,6 @@ struct CalendarView: View {
         .padding(.top, 28)
     }
 
-
     // MARK: - Agenda Day Header
 
     private func agendaDayHeader(
@@ -476,7 +473,9 @@ struct CalendarView: View {
 
         HStack(spacing: 8) {
 
-            if calendar.isDateInToday(date) {
+            if calendar.isDateInToday(
+                date
+            ) {
 
                 Circle()
                     .fill(coral)
@@ -495,7 +494,6 @@ struct CalendarView: View {
                         .month()
                         .day()
                 )
-                .uppercased()
             )
             .font(
                 .caption.weight(
@@ -509,7 +507,6 @@ struct CalendarView: View {
             )
         }
     }
-
 
     // MARK: - Apple Calendar
 
@@ -557,7 +554,6 @@ struct CalendarView: View {
         .padding(.top, 8)
     }
 
-
     // MARK: - Add Event
 
     private var addEventButton: some View {
@@ -600,7 +596,6 @@ struct CalendarView: View {
         )
     }
 
-
     // MARK: - Event Helpers
 
     private var eventsForAgenda:
@@ -627,7 +622,6 @@ struct CalendarView: View {
             }
     }
 
-
     // MARK: - Navigation
 
     private func moveWeek(
@@ -635,17 +629,19 @@ struct CalendarView: View {
     ) {
 
         guard let date =
-                calendar.date(
-                    byAdding: .day,
-                    value: amount * 7,
-                    to: selectedDate
-                )
+            calendar.date(
+                byAdding: .day,
+                value: amount * 7,
+                to: selectedDate
+            )
         else {
             return
         }
 
         withAnimation(
-            .easeInOut(duration: 0.2)
+            .easeInOut(
+                duration: 0.2
+            )
         ) {
 
             selectedDate = date
@@ -655,13 +651,14 @@ struct CalendarView: View {
     private func goToToday() {
 
         withAnimation(
-            .easeInOut(duration: 0.2)
+            .easeInOut(
+                duration: 0.2
+            )
         ) {
 
             selectedDate = Date()
         }
     }
-
 
     // MARK: - Apple Calendar Loading
 
@@ -673,11 +670,11 @@ struct CalendarView: View {
             )
 
         guard let dayEnd =
-                calendar.date(
-                    byAdding: .day,
-                    value: 1,
-                    to: dayStart
-                )
+            calendar.date(
+                byAdding: .day,
+                value: 1,
+                to: dayStart
+            )
         else {
             return
         }
@@ -687,7 +684,6 @@ struct CalendarView: View {
             to: dayEnd
         )
     }
-
 
     // MARK: - Event Date Logic
 
@@ -710,24 +706,22 @@ struct CalendarView: View {
             )
 
         guard let dayEnd =
-                calendar.date(
-                    byAdding: .day,
-                    value: 1,
-                    to: dayStart
-                )
+            calendar.date(
+                byAdding: .day,
+                value: 1,
+                to: dayStart
+            )
         else {
             return false
         }
 
         return event.startDate < dayEnd &&
-               event.endDate > dayStart
+            event.endDate > dayStart
     }
-
 
     // MARK: - Week Selector
 
-    private struct WeekSelector:
-        View {
+    private struct WeekSelector: View {
 
         @Binding var selectedDate: Date
 
@@ -735,14 +729,13 @@ struct CalendarView: View {
         let coral: Color
         let events: [CalendarEvent]
 
-        private var weekDates:
-            [Date] {
+        private var weekDates: [Date] {
 
             guard let interval =
-                    calendar.dateInterval(
-                        of: .weekOfYear,
-                        for: selectedDate
-                    )
+                calendar.dateInterval(
+                    of: .weekOfYear,
+                    for: selectedDate
+                )
             else {
                 return []
             }
@@ -784,9 +777,7 @@ struct CalendarView: View {
                             Text(
                                 date.formatted(
                                     .dateTime
-                                        .weekday(
-                                            .narrow
-                                        )
+                                        .weekday(.narrow)
                                 )
                             )
                             .font(.caption)
@@ -874,7 +865,7 @@ struct CalendarView: View {
                         ) ?? dayStart
 
                     return $0.startDate < dayEnd &&
-                           $0.endDate > dayStart
+                        $0.endDate > dayStart
                 }
 
             if dayEvents.isEmpty {
@@ -964,11 +955,9 @@ struct CalendarView: View {
         }
     }
 
-
     // MARK: - Event Card
 
-    private struct CalendarEventCard:
-        View {
+    private struct CalendarEventCard: View {
 
         let event: CalendarEvent
         let selectedDate: Date
@@ -984,9 +973,7 @@ struct CalendarView: View {
                 RoundedRectangle(
                     cornerRadius: 3
                 )
-                .fill(
-                    eventColor
-                )
+                .fill(eventColor)
                 .frame(width: 4)
 
                 VStack(
@@ -1091,8 +1078,7 @@ struct CalendarView: View {
             )
         }
 
-        private var eventColor:
-            Color {
+        private var eventColor: Color {
 
             switch event.eventColor {
 
@@ -1142,8 +1128,7 @@ struct CalendarView: View {
                         selectedDate
                 )
 
-            if startsToday &&
-                endsToday {
+            if startsToday && endsToday {
 
                 return "\(event.startDate.formatted(date: .omitted, time: .shortened)) – \(event.endDate.formatted(date: .omitted, time: .shortened))"
             }
@@ -1162,11 +1147,9 @@ struct CalendarView: View {
         }
     }
 
-
     // MARK: - Empty State
 
-    private struct EmptyCalendarState:
-        View {
+    private struct EmptyCalendarState: View {
 
         let isToday: Bool
 
