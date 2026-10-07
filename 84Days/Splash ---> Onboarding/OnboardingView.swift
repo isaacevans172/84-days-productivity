@@ -1,9 +1,3 @@
-//
-//  OnboardingView.swift
-//  84Days
-//
-//  Created by Isaac Evans on 2/10/2026.
-//
 import SwiftUI
 import Supabase
 import Auth
@@ -148,14 +142,9 @@ struct OnboardingView: View {
     private var mascotExpression:
         OnboardingMascotView.Expression {
 
-        // Once the email has been sent,
-        // give the mascot a happy/encouraging expression.
-
         if emailSent {
             return .happy
         }
-
-        // Step 2 uses the selected personality.
 
         if currentStep == 1 {
 
@@ -184,10 +173,6 @@ struct OnboardingView: View {
             }
         }
 
-        // Step 1:
-        // The mascot stays on the same expression while
-        // the user is typing in a field.
-
         if let focusedField {
 
             switch focusedField {
@@ -202,9 +187,6 @@ struct OnboardingView: View {
                 return .thinking
             }
         }
-
-        // Once the user leaves the fields,
-        // the mascot can react to the completed information.
 
         if !onboardingData.firstName.isEmpty &&
             !onboardingData.lastName.isEmpty &&
@@ -224,14 +206,10 @@ struct OnboardingView: View {
 
     private var currentMascotComment: String {
 
-        // MARK: Email sent
-
         if emailSent {
 
             return "Magic link sent! Check your inbox. I'll wait here."
         }
-
-        // MARK: Step 2
 
         if currentStep == 1 {
 
@@ -319,11 +297,6 @@ struct OnboardingView: View {
             }
         }
 
-        // MARK: Step 1
-
-        // While a field is actively being edited,
-        // keep the comment stable.
-
         if let focusedField {
 
             switch focusedField {
@@ -357,11 +330,6 @@ struct OnboardingView: View {
                 return "That looks good."
             }
         }
-
-        // MARK: Nothing focused
-
-        // These only happen once the user has left the field,
-        // rather than changing with every character.
 
         if !onboardingData.firstName.isEmpty &&
             !onboardingData.lastName.isEmpty &&
@@ -502,7 +470,12 @@ struct OnboardingView: View {
                     if isSendingLink {
 
                         ProgressView()
+                            .progressViewStyle(.circular)
                             .tint(.white)
+                            .frame(
+                                width: 18,
+                                height: 18
+                            )
                     }
 
                     Text(
@@ -531,8 +504,11 @@ struct OnboardingView: View {
                     )
                 )
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 17)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: 54,
+                    maxHeight: 54
+                )
                 .background(
                     Color(
                         red: 1.0,
